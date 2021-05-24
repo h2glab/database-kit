@@ -96,6 +96,11 @@ public final class DatabaseConnectionPool<Database> where Database: DatabaseKit.
                     // there are no references to it
                     active.connection = newConn
                     return newConn
+                }.catchMap { error in
+                    // we did not manage to reopen the connection
+                    // release the closed connection before failing
+                    self.releaseConnection(active.connection)
+                    throw error
                 }
             }
         } else if activeCount < config.maxConnections  {
